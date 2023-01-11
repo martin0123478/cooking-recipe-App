@@ -111,7 +111,41 @@ function iniciarApp(){
 
             <h3 class="my-3">Instrucciones</h3>
             <p>${strInstructions}</p>
+            <h3 class="my-3">Ingredientes y cantidades</h3>
             `
+        const listGroup = document.createElement('ul')
+        listGroup.classList.add('list-group')
+        for(let i=1;i<=20;i++ ){
+            if(receta[`strIngredient${i}`]){
+                const ingrediente = receta[`strIngredient${i}`]
+                const cantidad = receta[`strMeasure${i}`]
+                const ingredienteLi = document.createElement('li')
+                ingredienteLi.classList.add('list-group-item')
+                ingredienteLi.textContent = `${ingrediente} - ${cantidad}`
+                listGroup.appendChild(ingredienteLi)
+            }
+        }
+        modalBody.appendChild(listGroup)
+
+        const modalFooter = document.querySelector('.modal-footer')
+        limpiarHTML(modalFooter)
+        //Botones cerrar y favorito
+
+        const btnFavorito = document.createElement('button')
+        btnFavorito.classList.add('btn','btn-danger','col')
+        btnFavorito.textContent = 'Guardar Favorito'
+        
+
+        const btnCerrarModal = document.createElement('button')
+        btnCerrarModal.classList.add('btn','btn-secondary','col')
+        btnCerrarModal.textContent = 'Cerrar'
+        btnCerrarModal.onclick = function(){
+            modal.hide()
+        }
+
+        modalFooter.appendChild(btnFavorito)
+
+        modalFooter.appendChild(btnCerrarModal)
         modal.show()
 
    }
