@@ -1,10 +1,21 @@
 function iniciarApp(){
-    const selectCategorias = document.querySelector('#categorias')
-    selectCategorias.addEventListener('change',seleccionarCategoria)
     const resultado = document.querySelector('#resultado')
+    const selectCategorias = document.querySelector('#categorias')
+    if(selectCategorias){
+        selectCategorias.addEventListener('change',seleccionarCategoria)
+        obtenerCategorias()
+    }
+
+    const favoritosDiv = document.querySelector('.favoritos')
+
+    if(favoritosDiv){
+        obtenerFavoritos()
+    }
+    
+   
     const modal = new bootstrap.Modal('#modal',{})
 
-    obtenerCategorias()
+   
    function obtenerCategorias(){
         const url= 'https://www.themealdb.com/api/json/v1/1/categories.php'
         fetch(url)
@@ -53,14 +64,14 @@ function iniciarApp(){
             const recetaImagen = document.createElement('IMG')
             recetaImagen.classList.add('card-img-top')
             recetaImagen.alt = `Imagen de la receta ${strMeal}`
-            recetaImagen.src = strMealThumb
+            recetaImagen.src = strMealThumb ?? receta.img
 
             const recetaCardBody = document.createElement('DIV')
             recetaCardBody.classList.add('card-body')
 
             const recetaHeading = document.createElement('h3')
             recetaHeading.classList.add('card-title','mb-3')
-            recetaHeading.textContent = strMeal
+            recetaHeading.textContent = strMeal ?? receta.title
 
             const recetaButon = document.createElement('button')
             recetaButon.classList.add('btn','btn-danger','w-100')
@@ -69,7 +80,7 @@ function iniciarApp(){
                  recetaButon.dataset.bsToogle = "modal"
 
             recetaButon.onclick = function(){
-                seleccionarReceta(idMeal)
+                seleccionarReceta(idMeal ?? receta.id)
             }
 
             //inyectar en HTML
@@ -133,11 +144,14 @@ function iniciarApp(){
 
         const btnFavorito = document.createElement('button')
         btnFavorito.classList.add('btn','btn-danger','col')
-        btnFavorito.textContent = 'Guardar Favorito';
+        btnFavorito.textContent = existeStorage(idMeal) ? 'Eliminar Favorito' : 'Guardar Favorito';
 
         //LocalStorage
         btnFavorito.onclick = function(){
             if(existeStorage(idMeal)){
+                eliminarFavorito(idMeal)
+                btnFavorito.textContent = 'Guardar Favorito'
+                mostrarToats('Eliminado Correctamente')
                 return
             }
             agregarFavorito({
@@ -145,6 +159,8 @@ function iniciarApp(){
                 title:strMeal,
                 img:strMealThumb
             })
+            btnFavorito.textContent = 'Eliminar Favorito'
+            mostrarToats('Agregado Correctamente')
         }
         
 
@@ -167,9 +183,37 @@ function iniciarApp(){
         localStorage.setItem('favoritos',JSON.stringify([...favoritos,receta]))
    }
 
+   function eliminarFavorito(id){
+        const favoritos = JSON.parse(localStorage.getItem('favoritos')) ?? []
+        const nuevosFavoritos = favoritos.filter(favorito =>favorito.id !== id)
+        localStorage.setItem('favoritos',JSON.stringify(nuevosFavoritos))
+   }
+
    function existeStorage(id){
     const favoritos = JSON.parse(localStorage.getItem('favoritos')) ?? []
     return favoritos.some(favorito => favorito.id === id)
+   }
+
+   function mostrarToats(mensaje){
+        const toastDiv = document.querySelector('#toast')
+        const toastBody = document.querySelector('.toast-body')
+        const toast = new bootstrap.Toast(toastDiv);
+        toastBody.textContent = mensaje
+        toast.show()
+
+   }
+
+   function obtenerFavoritos(){
+    const favoritos = JSON.parse(localStorage.getItem('favoritos')) ?? [];
+    if(favoritos.length){
+        mostrarRecetas(favoritos)
+        return
+    }
+
+    const noFavoritos = document.createElement('P')
+    noFavoritos.textContent = 'No hay favoritos aún'
+    noFavoritos.classList.add('fs-4','text-center','font-bold','mt-5')
+    favoritosDiv.appendChild(noFavoritos)
    }
 
    function limpiarHTML(selector){
