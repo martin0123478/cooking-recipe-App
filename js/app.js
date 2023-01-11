@@ -2,6 +2,7 @@ function iniciarApp(){
     const selectCategorias = document.querySelector('#categorias')
     selectCategorias.addEventListener('change',seleccionarCategoria)
     const resultado = document.querySelector('#resultado')
+    const modal = new bootstrap.Modal('#modal',{})
 
     obtenerCategorias()
    function obtenerCategorias(){
@@ -32,6 +33,12 @@ function iniciarApp(){
    }
 
    function mostrarRecetas(recetas = []){
+     limpiarHTML(resultado)
+
+     const heading = document.createElement('H2')
+     heading.classList.add('text-center','text-black','my-5')
+     heading.textContent = recetas.length ? 'Resultados' : 'No hay resultados'
+     resultado.appendChild(heading)
 
         //iterar en los resultados
         
@@ -58,6 +65,12 @@ function iniciarApp(){
             const recetaButon = document.createElement('button')
             recetaButon.classList.add('btn','btn-danger','w-100')
             recetaButon.textContent = 'Ver receta'
+                recetaButon.dataset.bsTarget = "#modal"
+                 recetaButon.dataset.bsToogle = "modal"
+
+            recetaButon.onclick = function(){
+                seleccionarReceta(idMeal)
+            }
 
             //inyectar en HTML
             recetaCardBody.appendChild(recetaHeading)
@@ -71,10 +84,42 @@ function iniciarApp(){
 
 
 
-            console.log(recetaImagen)
         });
         
 
+   }
+
+   function seleccionarReceta(id){
+        const url = `https://themealdb.com/api/json/v1/1/lookup.php?i=${id}`
+        fetch(url)
+            .then(respuesta => respuesta.json())
+            .then(resultado => mostrarRecetaModal(resultado.meals[0]))
+   }
+
+
+   function mostrarRecetaModal(receta){
+        //Muestra el modal
+        const {idMeal,strInstructions,strMeal,strMealThumb} = receta
+        const modalTitle = document.querySelector('.modal-title')
+        const modalBody = document.querySelector('.modal-body')  
+        
+        modalTitle.textContent = strMeal
+
+        modalBody.innerHTML = `
+        
+            <img class="img-fluid" src="${strMealThumb}" alt="receta ${strMeal}"/>
+
+            <h3 class="my-3">Instrucciones</h3>
+            <p>${strInstructions}</p>
+            `
+        modal.show()
+
+   }
+
+   function limpiarHTML(selector){
+    while(selector.firstChild){
+        selector.removeChild(selector.firstChild)
+    }
    }
 }
 
